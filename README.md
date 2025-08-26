@@ -1,111 +1,119 @@
-# Project Backend 04 — Go_Bootcamp 
-Резюме: в этом проекте ты научишься добавлять и работать с авторизацией и базой данных в веб-приложении на языке **Go** с использованием **net/http** и **jackc/pgx**.
+# Project Backend 04 — Go_Bootcamp
 
-💡 [Нажми сюда](https://new.oprosso.net/p/4cb31ec3f47a4596bc758ea1861fb624), **чтобы поделиться с нами обратной связью на этот проект**. Это анонимно и поможет нашей команде сделать обучение лучше. Рекомендуем заполнить опрос сразу после выполнения проекта.
+**Summary:**  
+In this project, you'll learn how to implement and manage authorization and a database in a web application written in Go, using net/http and jackc/pgx.
 
-## Содержание
- 1. [Chapter I](#chapter-i)   
-     - [Инструкция](#инструкция)   
- 2. [Chapter II](#chapter-ii)  
-     - [Общая информация](#общая-информация)  
-         - [Авторизация](#авторизация)  
-         - [Идентификация, аутентификация, авторизация](#идентификация-аутентификация-авторизация) 
-         - [Авторизация с помощью логина и пароля](#авторизация-с-помощью-логина-и-пароля) 
- 3. [Chapter III](#chapter-iii)      
-     - [Задание 1. Добавление базы данных](#задание-1-добавление-базы-данных)    
-     - [Задание 2. Добавление авторизации](#задание-2-добавление-авторизации)  
-     - [Задание 3. Добавление логики игры между двумя игроками](#задание-3-добавление-логики-игры-между-двумя-игроками)  
+💡 [Click here](https://new.oprosso.net/p/4cb31ec3f47a4596bc758ea1861fb624) to share your feedback on this project. It's anonymous and will help our team improve the learning process. We recommend completing the survey right after finishing the project.
+
+## Contents
+
+  - [Chapter I](#chapter-i)
+    - [Instructions](#instructions)
+  - [Chapter II](#chapter-ii)
+    - [General Information](#general-information)
+      - [Authorization](#authorization)
+      - [Identification, Authentication, Authorization](#identification-authentication-authorization)
+      - [Authorization Using Login and Password](#authorization-using-login-and-password)
+    - [Topics for Study:\*\*](#topics-for-study)
+  - [Chapter III](#chapter-iii)
+  - [Project: Tic-Tac-Toe](#project-tic-tac-toe)
+    - [Task 1. Adding a database](#task-1-adding-a-database)
+    - [Task 2. Adding authorization](#task-2-adding-authorization)
+    - [Task 3. Adding logic for multiplayer games](#task-3-adding-logic-for-multiplayer-games)
+
 
 ## Chapter I
-## Инструкция
 
-1. На протяжении всего курса тебя будет сопровождать чувство неопределенности и острого дефицита информации — это нормально. Не забывай, что информация в репозитории и Google всегда с тобой. Как и пиры, и Rocket.Chat. Общайся. Ищи. Опирайся на здравый смысл. Не бойся ошибиться.
-2. Будь внимателен к источникам информации. Проверяй. Думай. Анализируй. Сравнивай. 
-3. Внимательно читай задания. Перечитай несколько раз. 
-4. Читать примеры тоже лучше внимательно. В них может быть что-то, что не указано в явном виде в самом задании.
-5. Тебе могут встретиться несоответствия, когда что-то новое в условиях задачи или примере противоречит уже известному. Если встретилось такое — попробуй разобраться. Если не получилось — запиши вопрос в открытые вопросы и выясни в процессе работы. Не оставляй открытые вопросы неразрешенными. 
-6. Если задание кажется непонятным или невыполнимым — так только кажется. Попробуй его декомпозировать. Скорее всего, отдельные части станут понятными. 
-7. На пути тебе встретятся самые разные задания. Те, что помечены звездочкой (\*) — подходят для более дотошных. Они повышенной сложности и необязательны к выполнению. Но если ты их сделаешь, то получишь дополнительный опыт и знания.
-8. Не пытайся обмануть систему и окружающих. В первую очередь ты обманешь себя.
-9. Есть вопрос? Спроси своего соседа справа. Если это не помогло — соседа слева.
-10. Когда пользуешься помощью — всегда разбирайся до конца: почему, как и зачем. Иначе помощь не будет иметь смысла.
-11. Всегда делай push только в ветку develop! Ветка master будет проигнорирована. Работай в директории src.
-12. В твоей директории не должно быть иных файлов, кроме тех, что обозначены в заданиях.
+### Instructions
+
+1. Throughout the course, you’ll experience uncertainty and a lack of information — this is normal. Remember, the repository, Google, your peers, and Rocket.Chat are always available. Communicate. Search. Use common sense. Don’t be afraid to make mistakes.
+2. Pay close attention to your sources. Verify. Think critically. Analyze. Compare.
+3. Read each task carefully. Then read it again.
+4. It’s best to read examples attentively as well. They may contain things not explicitly mentioned in the task.
+5. You may encounter inconsistencies — something in the instructions or an example that contradicts what you previously learned. If this happens, try to understand it. If that fails, write down your question and resolve it later. Don’t leave open questions unresolved.
+6. If a task seems confusing or impossible — it only seems that way. Try breaking it down. Most parts will likely become clear.
+7. You’ll come across a variety of tasks. Those marked with an asterisk (\*) are optional and more challenging. Completing them will provide you with extra experience and knowledge.
+8. Don’t try to trick the system or others. In the end, you're only fooling yourself.
+9. Have a question? Ask your neighbor on the right. If that doesn’t help, ask the one on the left.
+10. Whenever you receive help, always make sure you understand **why**, **how**, and **what for**. Otherwise, the help is pointless.
+11. Always push only to the develop branch! The master branch will be ignored. Work in the src directory.
+12. Your directory should contain only the files specified in the tasks — no more.
 
 ## Chapter II
-## Общая информация
 
-### Авторизация
+### General Information
 
-Средства авторизации контролируют доступ легальных пользователей к ресурсам системы, предоставляя каждому из них именно те права, которые ему были определены администратором.
+#### Authorization
 
-### Идентификация, аутентификация, авторизация
+Authorization mechanisms control access to system resources by legitimate users, assigning them the exact permissions defined by the system administrator.
 
-**Идентификация** — процедура, в результате выполнения которой для субъекта выявляется его уникальный признак, однозначно определяющий его в информационной системе.
+#### Identification, Authentication, Authorization
 
-**Аутентификация** — процедура проверки подлинности, например, проверка подлинности пользователя путем сравнения введенного им пароля с паролем, сохраненным в системе.
+- **Identification** — a process by which a system determines a unique trait that unambiguously identifies a subject within the system.
+- **Authentication** — a process for verifying authenticity, such as confirming a user's identity by comparing the entered password with the one stored in the system.
+- **Authorization** — the process of granting an individual or group the right to perform a specific set of actions.
 
-**Авторизация** — предоставление определенному лицу или группе лиц прав на выполнение определенного набора действий.
+#### Authorization Using Login and Password
 
-### Авторизация с помощью логина и пароля
+This method requires the user to provide a login and password for successful identification and authentication in the system. The login-password pair is set by the user during registration. Upon successful authorization, the server grants the user permission to perform available requests.
 
-Метод основывается на том, что пользователь должен предоставить логин и пароль для успешной идентификации и аутентификации в системе. Пара логина и пароля задается пользователем при его регистрации в системе. В случае успешной авторизации на сервере пользователю выдаются права на выполнение доступных ему запросов.
+The client sends a request to the server and receives a response with the message “Unauthorized” along with information about the authorization process. Once authorization is successfully completed, each subsequent request automatically includes the Authorization header ([header formation](https://datatracker.ietf.org/doc/html/rfc7617)), which transmits the client’s data for authentication by the server.
 
-Клиент отправляет запрос на сервер и получает в виде ответа сообщение «Unauthorized» вместе с информацией о порядке авторизации. После успешного прохождения авторизации в каждый последующий запрос клиента автоматически добавляется заголовок «Authorization» ([формирование заголовка авторизации](https://datatracker.ietf.org/doc/html/rfc7617)), в котором передаются данные клиента для аутентификации сервером.
+![img](misc/images/Auth.png/)
 
-<div align="center">
-  <img src="misc/images/Auth.png"/>
-</div>
+Other [authorization methods](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes) also exist.
 
-Существуют и [другие способы авторизации](https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes).
+### Topics for Study:**
 
-
-## Темы для изучения:
-
-- веб-приложение;
-- авторизация по паре логина и пароля (basic auth);
-- PostgreSQL;
-- jackc/pgx;
-- net/http.
+- Web applications
+- Authorization via login-password pair (basic auth)
+- PostgreSQL
+- jackc/pgx
+- net/http
 
 ## Chapter III
-### Проект: Крестики-Нолики
-Используй проект для серверной части с предыдущей недели T03.
 
-### Задание 1. Добавление базы данных
-- Опиши подключение к базе данных PostgreSQL при помощи библиотеки jackc/pgx.
-- Избавься от структуры-хранилища.
-- Добавь теги для полей структуры, которые необходимо сохранять в базу данных.
+## Project: Tic-Tac-Toe
 
-### Задание 2. Добавление авторизации
-- Добавь пользователей, у которых будет UUID, логин, пароль.
-- Реализуй поддержку пользователей на всех слоях.
-- Создай модель SignUpRequest, у которой будет логин и пароль.
-- Создай сервис авторизации, который использует UserService:
-    - Метод регистрации, который принимает SignUpRequest и возвращает факт успешной регистрации;
-    - Метод авторизации, который принимает в заголовке логин и пароль в виде base64(login:password) и возвращает UUID пользователя.
-- Создай хендлер авторизации, у которого будут следующие endpoint'ы:
-    - для регистрации пользователя,
-    - для авторизации пользователя.
-- Создай структуру UserAuthenticator с защитой от создания запросов неавторизированными пользователями.
-    - Провалидируй логин и пароль.
-    - Если валидация прошла успешно, то выполни запрос.
-    - Если валидация прошла с ошибкой, то добавь в ответ 401 код и не выполняй запрос.
-- Добавь UserAuthenticator для своих запросов:
-    - Разреши доступ без авторизации к endpoint'ам регистрации и авторизации.
-    - Для всех остальных endpoint'ов должна требоваться авторизация.
+Use the backend project from the previous week (T03) as the basis.
 
-### Задание 3. Добавление логики игры между двумя игроками
-- Добавь состояния для текущей игры:
-    - Ожидание игроков,
-    - Ход игрока с UUID,
-    - Ничья,
-    - Победа игрока с UUID.
-- Добавь информацию о значках, которыми будут ходить пользователи, в текущую игру.
-- Улучши алгоритм определения окончания игры с использованием состояний.
-- Добавь endpoint для создания новой игры с пользователем или компьютером.
-- Добавь endpoint для получения доступных текущих игр.
-- Добавь endpoint для присоединения пользователя к игре.
-- Улучши endpoint обновления текущей игры с учетом игры с пользователем или компьютером.
-- Добавь endpoint для получения текущей игры.
-- Добавь endpoint для получения информации о пользователе по UUID.
+### Task 1. Adding a database
+
+- Set up a connection to a PostgreSQL database using the jackc/pgx library.
+- Remove the in-memory storage structure.
+- Add struct tags to the fields that need to be persisted in the database.
+
+### Task 2. Adding authorization
+
+- Add support for users, each having a UUID, login, and password.
+- Implement user support across all layers of the application.
+- Create a SignUpRequest model that includes login and password.
+- Create an authentication service that uses UserService with the following methods:
+  - A registration method that takes a SignUpRequest and returns an indicator of successful registration.
+  - An authentication method that receives login and password in the header encoded as base64(login:password) and returns the user’s UUID.
+- Create an authorization handler with the following endpoints:
+  - user registration
+  - user authentication
+- Create a UserAuthenticator structure that protects endpoints from being accessed by unauthorized users:
+  - Validate the login and password.
+  - If validation succeeds, allow the request.
+  - If validation fails, respond with HTTP 401 and do not process the request.
+- Apply the UserAuthenticator to your endpoints:
+  - Allow unauthenticated access to the registration and authentication endpoints.
+  - Require authentication for all other endpoints.
+
+### Task 3. Adding logic for multiplayer games
+
+- Add states for the current game:
+  - Waiting for players
+  - Player with UUID to move
+  - Draw
+  - Player with UUID wins
+- Add information about the symbols used by each player in the current game.
+- Improve the end-of-game detection algorithm using game states.
+- Add an endpoint for creating a new game against a player or the computer.
+- Add an endpoint for retrieving available ongoing games.
+- Add an endpoint for joining a game as a player.
+- Improve the endpoint for updating the current game to support both player-vs-player and player-vs-computer modes.
+- Add an endpoint for retrieving the current game.
+- Add an endpoint for retrieving user information by UUID.
