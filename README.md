@@ -2,11 +2,10 @@
 
 ## Features
 
-- RESTful API
+- REST API
+- HTTP basic auth (RFC 7617)
 - Dependency Injection using uber/fx
-- Thread-safe collections (sync.Map)
+- PostgreSQL database
+- Graceful shutdown
+- PVP / PVE games
 - Minimax algorithm
-
-## Launch
-- go mod download
-- go run cmd/server/main.go
