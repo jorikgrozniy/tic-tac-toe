@@ -1,69 +1,64 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 
 	"go.uber.org/fx"
 
-	"github.com/jorikgrozniy/tic-tac-toe/internal/api/http/handlers"
-	"github.com/jorikgrozniy/tic-tac-toe/internal/application"
-	"github.com/jorikgrozniy/tic-tac-toe/internal/infrastructure/datasource/repository"
-	"github.com/jorikgrozniy/tic-tac-toe/internal/infrastructure/datasource/storage"
+	"github.com/jorikgrozniy/tic-tac-toe/internal/api/http/middleware"
+	"github.com/jorikgrozniy/tic-tac-toe/internal/di"
 )
 
 func main() {
 	app := fx.New(
-		fx.Provide(
-			storage.NewGameStorage,
-			repository.NewGameRepositoryImpl,
-			application.NewGameAppService,
-			handlers.NewGameHandler,
-			createMux,
-		),
-
+		di.Container(),
 		fx.Invoke(startServer),
 	)
 
 	app.Run()
 }
 
-func createMux(handler *handlers.GameHandler) *http.ServeMux {
-	mux := http.NewServeMux()
-
-	mux.HandleFunc("GET /game/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		handler.GetGameHandler(w, r, id)
-	})
-
-	mux.HandleFunc("POST /game/{id}", func(w http.ResponseWriter, r *http.Request) {
-		id := r.PathValue("id")
-		handler.MakeMoveHandler(w, r, id)
-	})
-
-	mux.HandleFunc("POST /game", handler.CreateGameHandler)
-	return mux
-}
-
-func applyMiddleware(mux *http.ServeMux) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("%s %s", r.Method, r.URL.Path)
-
-		w.Header().Set("Content-Type", "application/json")
-
-		mux.ServeHTTP(w, r)
-	})
-}
-
-func startServer(mux *http.ServeMux) {
-	port := ":8080"
-	log.Printf("Server starting on http://localhost%s", port)
-	log.Println("Available endpoints:")
-	log.Println("	GET /game/{id}          - Get game state")
-	log.Println("	POST /game/{id}   - Make a move")
-	log.Println("	POST /game              - Create new game")
-
-	if err := http.ListenAndServe(":8080", applyMiddleware(mux)); err != nil {
-		log.Fatal("Server failed to start:", err)
+func startServer(lc fx.Lifecycle, mux *http.ServeMux) {
+	server := &http.Server{
+		Addr:    ":8080",
+		Handler: middleware.Logger(mux),
 	}
+
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go func() {
+				log.Printf("Server starting on %s", server.Addr)
+				printInfo()
+
+				if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+					log.Fatal("Server failed to start:", err)
+				}
+			}()
+
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			log.Println("Closing server")
+			server.Shutdown(ctx)
+			log.Println("Server closed")
+
+			return nil
+		},
+	})
+}
+
+func printInfo() {
+	log.Println("Available endpoints:")
+	log.Println("	POST /auth/register     - Register")
+	log.Println("	POST /auth/login        - Login")
+
+	log.Println("	GET /users/{id}         - Get user info")
+
+	log.Println("	GET /games              - List of available games")
+	log.Println("	GET /games/{id}         - Get game state")
+	log.Println("	POST /games/create      - Create new game")
+	log.Println("	POST /games/{id}/move   - Make a move")
+	log.Println("	POST /games/{id}/join   - Join game")
 }

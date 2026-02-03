@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS games (
+    id UUID PRIMARY KEY NOT NULL,
+    board INTEGER[9] NOT NULL,
+    status VARCHAR NOT NULL,
+    players JSONB NOT NULL,
+    type VARCHAR NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION fnc_trg_update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language plpgsql;
+
+CREATE OR REPLACE TRIGGER trg_update_games_updated_at
+    BEFORE UPDATE ON games
+    FOR EACH ROW
+    EXECUTE FUNCTION fnc_trg_update_updated_at();

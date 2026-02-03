@@ -6,7 +6,13 @@ import (
 )
 
 type GameService interface {
-	ComputeNextMove(board model.GameBoard, player int) (int, int, error)
-	ValidateGameBoard(current model.GameBoard, gameID uuid.UUID) error
-	CheckGameCompletion(board model.GameBoard) bool
+	ComputeNextMove(game *model.CurrentGame, player model.GamePlayer) (int, int, error)
+	ValidateGameBoard(game *model.CurrentGame, player model.GamePlayer) error
+	CheckGameCompletion(game *model.CurrentGame) model.GameStatus
+
+	MakeMove(reqGame *model.CurrentGame, userID uuid.UUID) error
+	CreateGame(userID uuid.UUID, t string) (*model.CurrentGame, error)
+	GetGame(gameID string, userID uuid.UUID) (*model.CurrentGame, error)
+	GetAvailableGames() ([]model.GameInfo, int, error)
+	JoinGame(gameID string, userID uuid.UUID) error
 }

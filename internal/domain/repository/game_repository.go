@@ -8,4 +8,5 @@ import (
 type GameRepository interface {
 	Save(game *model.CurrentGame) error
 	Retrieve(id uuid.UUID) (*model.CurrentGame, error)
+	FindAvailableGames() ([]model.GameInfo, error)
 }

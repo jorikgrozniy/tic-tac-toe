@@ -2,26 +2,47 @@ package service
 
 import "github.com/jorikgrozniy/tic-tac-toe/internal/domain/model"
 
-const (
-	Playing = -1
-	Draw    = 0
-	WinX    = 1
-	WinO    = 2
-)
+func CheckGameStatus(game *model.CurrentGame) model.GameStatus {
+	if !game.Players.IsBoth() {
+		return model.GameStatus{
+			Type: model.StatusWaiting,
+		}
+	} else {
+		switch checkWin(game.Board) {
+		case model.BoardX:
+			return model.GameStatus{
+				Type:   model.StatusWin,
+				Player: game.Players.GetX(),
+			}
+		case model.BoardO:
+			return model.GameStatus{
+				Type:   model.StatusWin,
+				Player: game.Players.GetO(),
+			}
+		}
 
-func CheckGameStatus(board model.GameBoard) int {
-	winner := checkWin(board)
-	switch winner {
-	case model.PlayerX:
-		return WinX
-	case model.PlayerO:
-		return WinO
-	default:
-		if checkOverflow(board) {
-			return Draw
+		if isBoardFilled(game.Board) {
+			return model.GameStatus{
+				Type: model.StatusDraw,
+			}
+		}
+
+		x, o := countFlags(game.Board)
+		switch x {
+		case o:
+			return model.GameStatus{
+				Type:   model.StatusTurn,
+				Player: game.Players.GetX(),
+			}
+		case o + 1:
+			return model.GameStatus{
+				Type:   model.StatusTurn,
+				Player: game.Players.GetO(),
+			}
 		}
 	}
-	return Playing
+
+	return model.GameStatus{}
 }
 
 func checkWin(board model.GameBoard) int {
@@ -39,20 +60,29 @@ func checkWin(board model.GameBoard) int {
 	}
 
 	for _, comb := range winCombinations {
-		if comb[0] != model.Empty && comb[0] == comb[1] && comb[0] == comb[2] {
+		if comb[0] != model.BoardEmpty && comb[0] == comb[1] && comb[0] == comb[2] {
 			return comb[0]
 		}
 	}
 	return 0
 }
 
-func checkOverflow(board model.GameBoard) bool {
+func isBoardFilled(board model.GameBoard) bool {
+	x, o := countFlags(board)
+	return x+o == 9
+}
+
+func countFlags(board model.GameBoard) (int, int) {
+	x, o := 0, 0
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			if board[i][j] == model.Empty {
-				return false
+			switch board[i][j] {
+			case model.BoardX:
+				x++
+			case model.BoardO:
+				o++
 			}
 		}
 	}
-	return true
+	return x, o
 }

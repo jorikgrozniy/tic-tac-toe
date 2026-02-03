@@ -6,14 +6,14 @@ import (
 	"github.com/jorikgrozniy/tic-tac-toe/internal/domain/model"
 )
 
-func FindBestMove(board model.GameBoard, player int) (int, int, error) {
+func FindBestMove(game *model.CurrentGame, player model.GamePlayer) (int, int, error) {
 	bestScore, bestRow, bestCol := -11, -1, -1
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
-			if board[i][j] == model.Empty {
-				board[i][j] = player
-				score := minimax(board, player, 0, false)
-				board[i][j] = model.Empty
+			if game.Board[i][j] == model.BoardEmpty {
+				game.Board[i][j] = player.Flag
+				score := minimax(game, player, 0, false)
+				game.Board[i][j] = model.BoardEmpty
 
 				if score > bestScore {
 					bestScore, bestRow, bestCol = score, i, j
@@ -27,13 +27,16 @@ func FindBestMove(board model.GameBoard, player int) (int, int, error) {
 	return bestRow, bestCol, nil
 }
 
-func minimax(board model.GameBoard, player, depth int, isMaximizing bool) int {
-	status := CheckGameStatus(board)
-	if status == player {
-		return 10 - depth
-	} else if status != Draw && status != Playing {
-		return depth - 10
-	} else if status == Draw {
+func minimax(game *model.CurrentGame, player model.GamePlayer, depth int, isMaximizing bool) int {
+	status := CheckGameStatus(game)
+	switch status.Type {
+	case model.StatusWin:
+		if *status.Player == player {
+			return 10 - depth
+		} else {
+			return depth - 10
+		}
+	case model.StatusDraw:
 		return 0
 	}
 
@@ -41,10 +44,10 @@ func minimax(board model.GameBoard, player, depth int, isMaximizing bool) int {
 		bestScore := -11
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
-				if board[i][j] == model.Empty {
-					board[i][j] = player
-					score := minimax(board, player, depth+1, false)
-					board[i][j] = model.Empty
+				if game.Board[i][j] == model.BoardEmpty {
+					game.Board[i][j] = player.Flag
+					score := minimax(game, player, depth+1, false)
+					game.Board[i][j] = model.BoardEmpty
 					bestScore = max(bestScore, score)
 					if bestScore == 10 {
 						return bestScore
@@ -55,17 +58,14 @@ func minimax(board model.GameBoard, player, depth int, isMaximizing bool) int {
 		return bestScore
 	} else {
 		leastScore := 11
-		opp := model.PlayerX
-		if player == model.PlayerX {
-			opp = model.PlayerO
-		}
+		opp := game.Players.GetOpponent(player).Flag
 
 		for i := 0; i < 3; i++ {
 			for j := 0; j < 3; j++ {
-				if board[i][j] == model.Empty {
-					board[i][j] = opp
-					score := minimax(board, player, depth+1, true)
-					board[i][j] = model.Empty
+				if game.Board[i][j] == model.BoardEmpty {
+					game.Board[i][j] = opp
+					score := minimax(game, player, depth+1, true)
+					game.Board[i][j] = model.BoardEmpty
 					leastScore = min(leastScore, score)
 					if leastScore == -10 {
 						return leastScore
