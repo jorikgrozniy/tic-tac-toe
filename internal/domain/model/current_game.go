@@ -44,9 +44,9 @@ func (p *GamePlayers) AddPlayer(player GamePlayer) {
 }
 
 func (p *GamePlayers) GetByID(id uuid.UUID) *GamePlayer {
-	if *p.P1.ID == id {
+	if p.P1.ID != nil && *p.P1.ID == id {
 		return &p.P1
-	} else if *p.P2.ID == id {
+	} else if p.P2.ID != nil && *p.P2.ID == id {
 		return &p.P2
 	}
 	return nil

@@ -10,6 +10,7 @@ import (
 
 var (
 	ErrPrevBoardNotFound = errors.New("previous board not found")
+	ErrInvalidMove       = errors.New("invalid move")
 	ErrBoardAltered      = errors.New("the board was altered")
 	ErrOpponentMoved     = errors.New("the opponent's move was made")
 	ErrTooManyMoves      = errors.New("more than one move was made")
@@ -24,6 +25,8 @@ var (
 	ErrInitPlayers       = errors.New("error initializing players")
 	ErrCannotJoinGame    = errors.New("cannot join this game")
 	ErrNotPVPGame        = errors.New("not a pvp game")
+	ErrGameNotStarted    = errors.New("game not started")
+	ErrAlreadyJoined     = errors.New("already joined")
 )
 
 type gameServiceImpl struct {
@@ -49,6 +52,9 @@ func (s *gameServiceImpl) ValidateGameBoard(game *model.CurrentGame, player mode
 	identical := true
 	for i := 0; i < 3; i++ {
 		for j := 0; j < 3; j++ {
+			if game.Board[i][j] != model.BoardEmpty && game.Board[i][j] != model.BoardX && game.Board[i][j] != model.BoardO {
+				return ErrInvalidMove
+			}
 			if prevGame.Board[i][j] != model.BoardEmpty && prevGame.Board[i][j] != game.Board[i][j] {
 				return ErrBoardAltered
 			}
@@ -79,14 +85,18 @@ func (s *gameServiceImpl) MakeMove(reqGame *model.CurrentGame, userID uuid.UUID)
 		return err
 	}
 
+	if prevGame.Status.Type == model.StatusWaiting {
+		return ErrGameNotStarted
+	}
+
 	player := prevGame.Players.GetByID(userID)
 	if player == nil {
 		return ErrAccessDenied
 	}
 
-	opponent := reqGame.Players.GetOpponent(*player)
 	reqGame.Players = prevGame.Players
 	reqGame.Type = prevGame.Type
+	opponent := reqGame.Players.GetOpponent(*player)
 
 	if err := s.ValidateGameBoard(reqGame, *player); err != nil {
 		return err
@@ -98,7 +108,7 @@ func (s *gameServiceImpl) MakeMove(reqGame *model.CurrentGame, userID uuid.UUID)
 		return ErrMoveWhileWaiting
 	case model.StatusTurn:
 		if *prevGame.Status.Player == *player {
-			if opponent.IsExist() && opponent.IsBot() {
+			if opponent.IsExist() && opponent.IsBot() && reqGame.Status.Type == model.StatusTurn {
 				row, col, err := s.ComputeNextMove(reqGame, *opponent)
 				if err != nil {
 					return err
@@ -172,6 +182,11 @@ func (s *gameServiceImpl) JoinGame(gameID string, userID uuid.UUID) error {
 	game, err := s.repo.Retrieve(parsedGameID)
 	if err != nil {
 		return err
+	}
+
+	player := game.Players.GetByID(userID)
+	if player != nil {
+		return ErrAlreadyJoined
 	}
 
 	if game.Type != model.TypePVP {

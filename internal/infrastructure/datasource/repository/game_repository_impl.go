@@ -100,7 +100,7 @@ func (r *gameRepositoryImpl) FindAvailableGames() ([]model.GameInfo, error) {
 			id, created_at
 		FROM games
 		WHERE status = 'waiting' AND type = 'pvp'
-		ORDER BY g.created_at DESC
+		ORDER BY created_at DESC
 	`
 
 	rows, err := r.db.Query(context.Background(), query)
