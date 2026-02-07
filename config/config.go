@@ -5,7 +5,6 @@ import "os"
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
-	JWT      JWTConfig
 }
 
 type ServerConfig struct {
@@ -16,13 +15,6 @@ type DatabaseConfig struct {
 	URL string
 }
 
-type JWTConfig struct {
-	AccessSecret      string
-	RefreshSecret     string
-	AccessExpiration  string
-	RefreshExpiration string
-}
-
 func New() *Config {
 	return &Config{
 		Server: ServerConfig{
@@ -30,12 +22,6 @@ func New() *Config {
 		},
 		Database: DatabaseConfig{
 			URL: getEnv("DATABASE_URL", ""),
-		},
-		JWT: JWTConfig{
-			AccessSecret:      getEnv("JWT_ACCESS_SECRET", ""),
-			RefreshSecret:     getEnv("JWT_REFRESH_SECRET", ""),
-			AccessExpiration:  getEnv("JWT_ACCESS_EXPIRATION", ""),
-			RefreshExpiration: getEnv("JWT_REFRESH_EXPIRATION", ""),
 		},
 	}
 }
