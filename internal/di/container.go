@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jorikgrozniy/tic-tac-toe/config"
 	"github.com/jorikgrozniy/tic-tac-toe/internal/api/http/handler"
 	"github.com/jorikgrozniy/tic-tac-toe/internal/api/http/middleware"
 	"github.com/jorikgrozniy/tic-tac-toe/internal/api/http/router"
@@ -20,7 +21,13 @@ import (
 func Container() fx.Option {
 	return fx.Module("app",
 		fx.Provide(
-			newDatabasePool,
+			config.New,
+		),
+
+		fx.Provide(
+			func(lc fx.Lifecycle, config *config.Config) (*pgxpool.Pool, error) {
+				return newDatabasePool(lc, config.Database.URL)
+			},
 		),
 
 		fx.Provide(
@@ -51,11 +58,15 @@ func Container() fx.Option {
 			router.NewRouter,
 			routerMuxProvider,
 		),
+
+		fx.Provide(func(cfg *config.Config) string {
+			return cfg.Server.Port
+		}),
 	)
 }
 
-func newDatabasePool(lc fx.Lifecycle) (*pgxpool.Pool, error) {
-	pool, err := database.NewPool()
+func newDatabasePool(lc fx.Lifecycle, dbURL string) (*pgxpool.Pool, error) {
+	pool, err := database.NewPool(dbURL)
 	if err != nil {
 		return nil, err
 	}

@@ -20,9 +20,9 @@ func main() {
 	app.Run()
 }
 
-func startServer(lc fx.Lifecycle, mux *http.ServeMux) {
+func startServer(lc fx.Lifecycle, mux *http.ServeMux, port string) {
 	server := &http.Server{
-		Addr:    ":8080",
+		Addr:    port,
 		Handler: middleware.Logger(mux),
 	}
 

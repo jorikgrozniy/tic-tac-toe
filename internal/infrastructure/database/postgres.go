@@ -3,14 +3,13 @@ package database
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewPool() (*pgxpool.Pool, error) {
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("DATABASE_URL"))
+func NewPool(dbURL string) (*pgxpool.Pool, error) {
+	dbpool, err := pgxpool.New(context.Background(), dbURL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to create connection pool: %w", err)
 	}
