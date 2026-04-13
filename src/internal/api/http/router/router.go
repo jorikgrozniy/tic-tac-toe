@@ -34,6 +34,9 @@ func (rt *Router) SetupRoutes() *http.ServeMux {
 	// auth
 	mux.HandleFunc("POST /auth/register", rt.authHandler.RegisterHandler)
 	mux.HandleFunc("POST /auth/login", rt.authHandler.LoginHandler)
+	mux.HandleFunc("POST /auth/update/access", rt.authHandler.UpdateAccessTokenHandler)
+	mux.HandleFunc("POST /auth/update/refresh", rt.authHandler.UpdateRefreshTokenHandler)
+	mux.HandleFunc("GET /auth/me", rt.authenticator.RequireAuth(rt.authHandler.MeHandler))
 
 	// user
 	mux.HandleFunc("GET /users/{id}", rt.authenticator.RequireAuth(func(w http.ResponseWriter, r *http.Request) {

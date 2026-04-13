@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"tic-tac-toe/internal/api/http/contextkey"
 	"tic-tac-toe/internal/api/http/dto"
+	"tic-tac-toe/internal/api/http/mapper"
 	"tic-tac-toe/internal/api/http/util"
 	"tic-tac-toe/internal/auth"
 	"tic-tac-toe/internal/domain/service"
@@ -42,13 +44,13 @@ func (h *AuthHandler) RegisterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
-	authHeader := r.Header.Get("Authorization")
-	if authHeader == "" {
-		util.SendError(w, "authorization header required", http.StatusUnauthorized)
+	var req auth.JwtRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		util.SendError(w, "invalid JSON format", http.StatusBadRequest)
 		return
 	}
 
-	userID, err := h.authService.Authenticate(authHeader)
+	jwtResponse, err := h.authService.Authenticate(&req)
 	if err != nil {
 		switch err {
 		case auth.ErrInvalidCredentials:
@@ -61,5 +63,56 @@ func (h *AuthHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.SendAuthSuccess(w, userID.String())
+	if err := json.NewEncoder(w).Encode(*jwtResponse); err != nil {
+		util.SendError(w, "error creating response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *AuthHandler) UpdateAccessTokenHandler(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	jwtResponse, err := h.authService.UpdateAccessToken(authHeader)
+	if err != nil {
+		util.SendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(*jwtResponse); err != nil {
+		util.SendError(w, "error creating response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *AuthHandler) UpdateRefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	authHeader := r.Header.Get("Authorization")
+	jwtResponse, err := h.authService.UpdateRefreshToken(authHeader)
+	if err != nil {
+		util.SendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	if err := json.NewEncoder(w).Encode(*jwtResponse); err != nil {
+		util.SendError(w, "error creating response", http.StatusInternalServerError)
+		return
+	}
+}
+
+func (h *AuthHandler) MeHandler(w http.ResponseWriter, r *http.Request) {
+	userID, ok := contextkey.GetUserID(r.Context())
+	if !ok {
+		util.SendError(w, "Authentication required", http.StatusUnauthorized)
+		return
+	}
+
+	userInfo, err := h.authService.GetMyInfo(userID.String())
+	if err != nil {
+		util.SendError(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	response := mapper.ToDTOUserInfo(userInfo)
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		util.SendError(w, "error creating response", http.StatusInternalServerError)
+		return
+	}
 }

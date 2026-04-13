@@ -22,7 +22,7 @@ func (ua *UserAuthenticator) RequireAuth(next http.HandlerFunc) http.HandlerFunc
 	return func(w http.ResponseWriter, r *http.Request) {
 		authHeader := r.Header.Get("Authorization")
 
-		userID, err := ua.authService.Authenticate(authHeader)
+		userID, err := ua.authService.Authorize(authHeader)
 		if err != nil {
 			util.SendError(w, "Authentication required", http.StatusUnauthorized)
 			return

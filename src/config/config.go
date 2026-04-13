@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	JWT      JWTConfig
 }
 
 type ServerConfig struct {
@@ -17,6 +18,13 @@ type ServerConfig struct {
 
 type DatabaseConfig struct {
 	URL string
+}
+
+type JWTConfig struct {
+	AccessSecret      string
+	RefreshSecret     string
+	AccessExpiration  string
+	RefreshExpiration string
 }
 
 func New() *Config {
@@ -28,6 +36,12 @@ func New() *Config {
 		},
 		Database: DatabaseConfig{
 			URL: getEnv("DATABASE_URL", "postgres://user:password@host:port/database"),
+		},
+		JWT: JWTConfig{
+			AccessSecret:      getEnv("JWT_ACCESS_SECRET", ""),
+			RefreshSecret:     getEnv("JWT_REFRESH_SECRET", ""),
+			AccessExpiration:  getEnv("JWT_ACCESS_EXPIRATION", ""),
+			RefreshExpiration: getEnv("JWT_REFRESH_EXPIRATION", ""),
 		},
 	}
 }

@@ -42,6 +42,10 @@ func Container() fx.Option {
 		),
 
 		fx.Provide(
+			func(cfg *config.Config) (*auth.JwtProvider, error) {
+				return auth.NewJwtProvider(cfg.JWT.AccessSecret, cfg.JWT.RefreshSecret,
+					cfg.JWT.AccessExpiration, cfg.JWT.RefreshExpiration)
+			},
 			auth.NewAuthService,
 		),
 

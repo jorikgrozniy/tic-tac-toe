@@ -34,15 +34,3 @@ func SendSuccess(w http.ResponseWriter, data any, code int) {
 
 	json.NewEncoder(w).Encode(response)
 }
-
-func SendAuthSuccess(w http.ResponseWriter, userID string) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-
-	response := map[string]any{
-		"success": true,
-		"user_id": userID,
-	}
-
-	json.NewEncoder(w).Encode(response)
-}

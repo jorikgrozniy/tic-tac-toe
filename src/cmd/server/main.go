@@ -51,14 +51,17 @@ func startServer(lc fx.Lifecycle, mux *http.ServeMux, port string) {
 
 func printInfo() {
 	log.Println("Available endpoints:")
-	log.Println("	POST /auth/register     - Register")
-	log.Println("	POST /auth/login        - Login")
+	log.Println("	POST /auth/register        - Register")
+	log.Println("	POST /auth/login           - Login")
+	log.Println("	POST /auth/update/access   - Update access token")
+	log.Println("	POST /auth/update/refresh  - Update both tokens")
+	log.Println("	GET /auth/me               - Get your info")
 
-	log.Println("	GET /users/{id}         - Get user info")
+	log.Println("	GET /users/{id}            - Get user info")
 
-	log.Println("	GET /games              - List of available games")
-	log.Println("	GET /games/{id}         - Get game state")
-	log.Println("	POST /games/create      - Create new game")
-	log.Println("	POST /games/{id}/move   - Make a move")
-	log.Println("	POST /games/{id}/join   - Join game")
+	log.Println("	GET /games                 - List of available games")
+	log.Println("	GET /games/{id}            - Get game state")
+	log.Println("	POST /games/create         - Create new game")
+	log.Println("	POST /games/{id}/move      - Make a move")
+	log.Println("	POST /games/{id}/join      - Join game")
 }

@@ -1,11 +1,11 @@
 package auth
 
 import (
-	"encoding/base64"
 	"errors"
 	"strings"
 
 	"tic-tac-toe/internal/api/http/dto"
+	"tic-tac-toe/internal/domain/model"
 	"tic-tac-toe/internal/domain/service"
 
 	"github.com/google/uuid"
@@ -17,11 +17,13 @@ var (
 
 type AuthService struct {
 	userService service.UserService
+	jwtProvider *JwtProvider
 }
 
-func NewAuthService(userService service.UserService) *AuthService {
+func NewAuthService(userService service.UserService, jwtProvider *JwtProvider) *AuthService {
 	return &AuthService{
 		userService: userService,
+		jwtProvider: jwtProvider,
 	}
 }
 
@@ -29,29 +31,103 @@ func (s *AuthService) Register(req *dto.SignUpRequest) error {
 	return s.userService.CreateUser(req.Login, req.Password)
 }
 
-func (s *AuthService) Authenticate(authHeader string) (uuid.UUID, error) {
-	if !strings.HasPrefix(authHeader, "Basic ") {
-		return uuid.Nil, ErrInvalidCredentials
-	}
-
-	encoded := strings.TrimPrefix(authHeader, "Basic ")
-	decoded, err := base64.StdEncoding.DecodeString(encoded)
+func (s *AuthService) Authorize(authHeader string) (uuid.UUID, error) {
+	token, err := s.validateAuthHeader(authHeader)
 	if err != nil {
-		return uuid.Nil, ErrInvalidCredentials
+		return uuid.Nil, err
 	}
 
-	credentials := string(decoded)
-	parts := strings.SplitN(credentials, ":", 2)
-	if len(parts) != 2 {
-		return uuid.Nil, ErrInvalidCredentials
-	}
-
-	username := parts[0]
-	password := parts[1]
-	userID, err := s.userService.Authenticate(username, password)
+	userID, err := s.jwtProvider.ValidateAccessToken(token)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
 	return userID, nil
+}
+
+func (s *AuthService) Authenticate(req *JwtRequest) (*JwtResponse, error) {
+	userID, err := s.userService.Authenticate(req.Login, req.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := s.jwtProvider.GenerateAccessToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.jwtProvider.GenerateRefreshToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &JwtResponse{
+		Type:         "login",
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *AuthService) UpdateAccessToken(authHeader string) (*JwtResponse, error) {
+	token, err := s.validateAuthHeader(authHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := s.jwtProvider.ValidateRefreshToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := s.jwtProvider.GenerateAccessToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &JwtResponse{
+		Type:        "update access",
+		AccessToken: accessToken,
+	}, nil
+}
+
+func (s *AuthService) UpdateRefreshToken(authHeader string) (*JwtResponse, error) {
+	token, err := s.validateAuthHeader(authHeader)
+	if err != nil {
+		return nil, err
+	}
+
+	userID, err := s.jwtProvider.ValidateRefreshToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := s.jwtProvider.GenerateAccessToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := s.jwtProvider.GenerateRefreshToken(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &JwtResponse{
+		Type:         "update refresh",
+		AccessToken:  accessToken,
+		RefreshToken: refreshToken,
+	}, nil
+}
+
+func (s *AuthService) GetMyInfo(userID string) (*model.UserInfo, error) {
+	return s.userService.GetUserInfo(userID)
+}
+
+func (s *AuthService) validateAuthHeader(authHeader string) (string, error) {
+	if !strings.HasPrefix(authHeader, "Bearer ") {
+		return "", ErrInvalidCredentials
+	}
+
+	token := strings.TrimPrefix(authHeader, "Bearer ")
+
+	return token, nil
 }
